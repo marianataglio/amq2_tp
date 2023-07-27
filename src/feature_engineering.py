@@ -72,7 +72,7 @@ class FeatureEngineeringPipeline(object):
 
         #PREPARANDO DATA DE ENTRENAMIENTO Y TEST
         # Eliminación de variables que no contribuyen a la predicción por ser muy específicas
-        df.drop(columns=['Item_Fat_Content', 'Item_Type', 'Item_Identifier', 'Outlet_Identifier'])
+        df = df.drop(columns=['Item_Fat_Content', 'Item_Type', 'Item_Identifier', 'Outlet_Identifier'])
 
         df_transformed = df.copy()
 
@@ -89,7 +89,7 @@ class FeatureEngineeringPipeline(object):
         df_test = transformed_dataframe[transformed_dataframe['Set'] == 'test']
 
         df_train.drop(['Set'], axis=1, inplace=True)
-        df_test.drop(['Set'], axis=1, inplace=True)
+        df_test.drop(['Set', 'Item_Outlet_Sales'], axis=1, inplace=True)
 
         train_output_path = os.path.join(self.output_path, 'train_final.csv')
         test_output_path = os.path.join(self.output_path, 'test_final.csv')
