@@ -46,32 +46,32 @@ class FeatureEngineeringPipeline(object):
         :rtype: pd.Dataframe
     
         """
-        #AÑOS DEL ESTABLECIMIENTO
+        # Outlet establishment year
         df['Outlet_Establishment_Year'] = 2020 - df['Outlet_Establishment_Year']
 
-        #IMPUTACION POR MODA DE FALTANTES DE ITEM_WEIGHT
+        # Mode imputation of item_weight
         productos = list(df[df['Item_Weight'].isnull()]['Item_Identifier'].unique())
         for producto in productos:
             moda = (df[df['Item_Identifier'] == producto][['Item_Weight']]).mode().iloc[0,0]
             df.loc[df['Item_Identifier'] == producto, 'Item_Weight'] = moda
 
-        #LIMPIEZA DE FALTANTES EN EL TAMAÑO DE LAS TIENDAS
+        # Clean nulls in outlet_size
         outlets = list(df[df['Outlet_Size'].isnull()]['Outlet_Identifier'].unique())
         for outlet in outlets:
             df.loc[df['Outlet_Identifier'] == outlet, 'Outlet_Size'] =  'Small'
 
-        #SEPARACION DE PRECIO EN CUANTILES
+        # Divide in buckets of price
         df['Item_MRP'] = pd.qcut(df['Item_MRP'], 4, labels = [1, 2, 3, 4])
 
-        #CODIFICACIÓN DE VARIABLES ORDINALES
+        # Ordinal variables encoding
         df['Outlet_Size'] = df['Outlet_Size'].replace({'High': 2, 'Medium': 1, 'Small': 0})
         df['Outlet_Location_Type'] = df['Outlet_Location_Type'].replace({'Tier 1': 2, 'Tier 2': 1, 'Tier 3': 0}) # Estas categorias se ordenaron asumiendo la categoria 2 como más lejos
         
-        #ONE HOT ENCODING DE OUTLET TYPE
+        # One hot encoding of outlet_type
         df = pd.get_dummies(df, columns=['Outlet_Type'])
 
-        #PREPARANDO DATA DE ENTRENAMIENTO Y TEST
-        # Eliminación de variables que no contribuyen a la predicción por ser muy específicas
+        # Prepare data fron train and test
+        # Remove variables that are too specific. 
         df = df.drop(columns=['Item_Fat_Content', 'Item_Type', 'Item_Identifier', 'Outlet_Identifier'])
 
         df_transformed = df.copy()
@@ -84,7 +84,7 @@ class FeatureEngineeringPipeline(object):
         :param transformed_dataframe: the tranformed dataframe to be written
         :type transformed_dataframe: pd.Dataframe
         """
-        #SPLIT TRANSFORMED DF INTO TRAIN AND TEST DF BASED ON THE SET COLUMN
+        # Split transformed df into train and test df based on the set column.
         df_train = transformed_dataframe[transformed_dataframe['Set'] == 'train']
         df_test = transformed_dataframe[transformed_dataframe['Set'] == 'test']
 
@@ -94,10 +94,10 @@ class FeatureEngineeringPipeline(object):
         train_output_path = os.path.join(self.output_path, 'train_final.csv')
         test_output_path = os.path.join(self.output_path, 'test_final.csv')
 
-        #WRITE TRAIN DF TO CSV
+        # Write train df to csv
         df_train.to_csv(train_output_path, sep=',', index=False)
 
-        #WRITE TEST DF TO CSV
+        # Write test df to csv
         df_test.to_csv(test_output_path, sep=',', index=False)  
         
         return None
