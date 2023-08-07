@@ -89,12 +89,16 @@ class ModelTrainingPipeline(object):
         :return: None
         """
    
-        #Save the model as model.pkl in the specified directory
-        model_file_path = os.path.join(os.path.dirname(self.model_path), 'model.pkl')
+        # Create model directory if it doesn't exist
+        model_directory = os.path.join(os.path.dirname(self.model_path), 'model')
+        os.makedirs(model_directory, exist_ok=True)
+
+        # Save the model as model.pkl in the specified directory
+        model_file_path = os.path.join(model_directory, 'model.pkl')
         with open(model_file_path, 'wb') as f:
             pickle.dump(model_trained, f)
 
-        print(f"Model saved successfully in '{self.model_path}', as 'model.pkl'.")
+        print(f"Model saved successfully in '{model_file_path}', as 'model.pkl'.")
 
         return None
           
