@@ -6,24 +6,27 @@ AUTOR:MARIANA TAGLIO
 FECHA: 07/08/2022
 """
 
-# Imports
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy import stats
-from sklearn.model_selection import train_test_split, cross_validate, cross_val_score
-from sklearn import metrics
-from sklearn.linear_model import LinearRegression
-import pickle
 import argparse
 import os
+import pickle
+
+import pandas as pd
+from sklearn import metrics
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
 
 
 class ModelTrainingPipeline(object):
+    """
+    Class that handles the whole training pipeline
 
-    def __init__(self, input_path, model_path):
+    """
+    def __init__(self, input_path, models_path):
+        """
+        :input_path str 
+        """
         self.input_path = input_path
-        self.model_path = model_path
+        self.models_path = models_path
 
     def read_data(self) -> pd.DataFrame:
         """
@@ -43,7 +46,7 @@ class ModelTrainingPipeline(object):
         :param df: The DataFrame containing the training data.
         :type df: pd.DataFrame
         :return: The DataFrame with training data (unchanged).
-        :rtype: pd.DataFrame        
+        :rtype: pd.DataFrame
         """
         seed = 28
         model = LinearRegression()
@@ -60,13 +63,13 @@ class ModelTrainingPipeline(object):
 
         # Calculate mean square error and rr (coefficient of determination)
         mse_train = metrics.mean_squared_error(y_train, model.predict(x_train))
-        R2_train = model.score(x_train, y_train)
+        r2_train = model.score(x_train, y_train)
         print('Métricas del Modelo:')
-        print('ENTRENAMIENTO: RMSE: {:.2f} - R2: {:.4f}'.format(mse_train**0.5, R2_train))
+        print('ENTRENAMIENTO: RMSE: {:.2f} - R2: {:.4f}'.format(mse_train**0.5, r2_train))
 
         mse_val = metrics.mean_squared_error(y_val, pred)
-        R2_val = model.score(x_val, y_val)
-        print('VALIDACIÓN: RMSE: {:.2f} - R2: {:.4f}'.format(mse_val**0.5, R2_val))
+        r2_val = model.score(x_val, y_val)
+        print('VALIDACIÓN: RMSE: {:.2f} - R2: {:.4f}'.format(mse_val**0.5, r2_val))
 
         print('\nCoeficientes del Modelo:')
         # Print model constant
@@ -90,18 +93,15 @@ class ModelTrainingPipeline(object):
         """
    
         # Create model directory if it doesn't exist
-        model_directory = os.path.join(os.path.dirname(self.model_path), 'model')
-        os.makedirs(model_directory, exist_ok=True)
+        os.makedirs(self.models_path, exist_ok=True)
 
         # Save the model as model.pkl in the specified directory
-        model_file_path = os.path.join(model_directory, 'model.pkl')
+        model_file_path = os.path.join(self.models_path, 'model.pkl')
         with open(model_file_path, 'wb') as f:
             pickle.dump(model_trained, f)
 
-        print(f"Model saved successfully in '{model_file_path}', as 'model.pkl'.")
-
-        return None
-          
+        print(f"Model saved successfully in '{model_file_path}.")
+         
 
     def run(self):
     
@@ -112,12 +112,12 @@ class ModelTrainingPipeline(object):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_path", type=str, help="Path to the input data CSV file.")
-    parser.add_argument("--model_path", type=str, help="Path to save the trained model in pkl format.")
+    parser.add_argument("--input-path", type=str, help="Path to the input data CSV file.")
+    parser.add_argument("--models-path", type=str, help="Path to save the trained model in pkl format.")
 
     args = parser.parse_args()
     ModelTrainingPipeline(input_path = args.input_path,
-                            model_path = args.model_path).run()
+                            models_path = args.models_path).run()
 
 
 if __name__ == "__main__":
