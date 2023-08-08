@@ -31,7 +31,7 @@ class ModelTrainingPipeline(object):
     def read_data(self) -> pd.DataFrame:
         """
         Read the training data from a csv file and returns a pandas DataFrame.        
-        :return pandas_df: DataFrame containing the training data. 
+        :return df_train: DataFrame containing the training data. 
         :rtype: pd.DataFrame
         """
         df_train = pd.read_csv(os.path.join(self.input_path, 'train_final.csv'))
