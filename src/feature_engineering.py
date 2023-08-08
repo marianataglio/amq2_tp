@@ -7,10 +7,10 @@ AUTOR: MARIANA TAGLIO
 FECHA: 20/07/2023
 """
 
-# Imports
-import pandas as pd
-import os
 import argparse
+import os
+
+import pandas as pd
 
 
 class FeatureEngineeringPipeline(object):
@@ -85,8 +85,8 @@ class FeatureEngineeringPipeline(object):
         :type transformed_dataframe: pd.Dataframe
         """
         # Split transformed df into train and test df based on the set column.
-        df_train = transformed_dataframe[transformed_dataframe['Set'] == 'train']
-        df_test = transformed_dataframe[transformed_dataframe['Set'] == 'test']
+        df_train = transformed_dataframe[transformed_dataframe['Set'] == 'train'].copy()
+        df_test = transformed_dataframe[transformed_dataframe['Set'] == 'test'].copy()
 
         df_train.drop(['Set'], axis=1, inplace=True)
         df_test.drop(['Set', 'Item_Outlet_Sales'], axis=1, inplace=True)
@@ -112,8 +112,8 @@ class FeatureEngineeringPipeline(object):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input-path")
-    parser.add_argument("--output-path")
+    parser.add_argument("--input-path", type=str, help="Path to the input data CSV file.")
+    parser.add_argument("--output-path", type=str, help="Path to the output data CSV file.")
 
     args = parser.parse_args()
     FeatureEngineeringPipeline(input_path = args.input_path,
