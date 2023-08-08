@@ -1,0 +1,5 @@
+DATA_PATH: data/raw
+TFMD_DATA_PATH: data/transformed
+MODELS_PATH: models
+PRODUCTION_PATH: models/model_prod.pkl
+PREDS_PATH: data/preds
