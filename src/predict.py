@@ -12,7 +12,7 @@ FECHA:
 import pandas as pd
 import os
 import pickle
-from src.config import ROOT_PATH, load_config
+from config import ROOT_PATH, load_config
 import argparse
 
 
@@ -33,7 +33,7 @@ class MakePredictionPipeline(object):
             :return pred_data: DataFrame containing the test data. 
             :rtype: pd.DataFrame
             """
-            pred_data = pd.read_csv(os.path.join(self.input_path, 'test_final.csv'))
+            pred_data = pd.read_csv(os.path.join(self.input_path))
 
             return pred_data
 
@@ -45,10 +45,8 @@ class MakePredictionPipeline(object):
             """    
 
             #ToDo: change to PRODUCTION_PATH eventually
-            config = load_config(os.path.join(ROOT_PATH, "config.yaml"))
-            model = config["MODELS_PATH"]
 
-            with open(model, 'rb') as model_file:
+            with open(self.model_path, 'rb') as model_file:
                 self.model = pickle.load(model_file)           
 
 
