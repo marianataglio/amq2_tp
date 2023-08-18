@@ -1,7 +1,7 @@
 import subprocess
 import os 
 
-from src.config import ROOT_PATH, load_config
+from config import ROOT_PATH, load_config
 
 
 config = load_config(os.path.join(ROOT_PATH, "config.yaml"))
