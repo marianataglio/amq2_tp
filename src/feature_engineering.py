@@ -2,15 +2,20 @@
 feature_engineering.py
 
 
-DESCRIPTION: FEATURE TRANFORMATION
-AUTHOR: MARIANA TAGLIO
-DATE: 20/07/2023
+DESCRIPCIÓN: TRANSFORMACIÓN DE VARIABLES
+AUTOR: MARIANA TAGLIO
+FECHA: 18/08/2023
 """
+
 
 import argparse
 import os
+from sklearn.pipeline import Pipeline
+import pickle
+
 
 import pandas as pd
+from transformations import PriceBucketsTransformer, ModeImputation, OutletYearTransformer, OutletSizeImputer, OrdinalEncoderTransformer, OneHotEncoder
 
 
 class FeatureEngineeringPipeline(object):
@@ -21,101 +26,77 @@ class FeatureEngineeringPipeline(object):
 
     def read_data(self) -> pd.DataFrame:
         """
+        COMPLETAR DOCSTRING  
         Reads train and test data, concatenates both sets to perform feature engineering. 
         :return pandas_df: The desired DataLake table as a DataFrame
         :rtype: pd.DataFrame
         """
 
-        data_train = pd.read_csv(os.path.join(self.input_path, 'Train_BigMart.csv'))
-        data_test = pd.read_csv(os.path.join(self.input_path, 'Test_BigMart.csv'))
-        # Identificando la data de train y de test, para posteriormente unión y separación
-        data_train['Set'] = 'train'
-        data_test['Set'] = 'test'
-        data = pd.concat([data_train, data_test], ignore_index=True, sort=False)
+        data = pd.read_csv(os.path.join(self.input_path, 'Train_BigMart.csv'))
 
         return data
 
-    def data_transformation(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Feature engineering on dataframe: cleaning and transformation of variables
-        :param df: The dataframe that will be transformed
-        :type df: pd.Dataframe
-        :return: The transformed dataframe
-        :rtype: pd.Dataframe
+    def run_pipeline(self):
+        df = self.read_data()
 
-        """
-        # Outlet establishment year
-        df['Outlet_Establishment_Year'] = 2020 - df['Outlet_Establishment_Year']
+        price_columns = ['Item_MRP']
+        impute_mode_columns = ['Item_Weight']
+        outlet_year_columns = ['Outlet_Establishment_Year']
+        outlet_size_columns = ['Outlet_Size']
+        ordinal_encoder_mapping = {
+            'Outlet_Size': {'High': 2, 'Medium': 1, 'Small': 0},
+            'Outlet_Location_Type': {'Tier 1': 2, 'Tier 2': 1, 'Tier 3': 0}
+        }
+        one_hot_columns = ['Outlet_Type']
 
-        # Mode imputation of item_weight
-        productos = list(df[df['Item_Weight'].isnull()]['Item_Identifier'].unique())
-        for producto in productos:
-            moda = (df[df['Item_Identifier'] == producto][['Item_Weight']]).mode().iloc[0, 0]
-            df.loc[df['Item_Identifier'] == producto, 'Item_Weight'] = moda
+        pipeline = Pipeline([
+            ('price_buckets', PriceBucketsTransformer(columns=price_columns)),
+            ('impute_mode', ModeImputation(columns=impute_mode_columns)),
+            ('outlet_year', OutletYearTransformer(columns=outlet_year_columns)),
+            ('outlet_size_imputer', OutletSizeImputer(columns=outlet_size_columns)),
+            ('ordinal_encoder', OrdinalEncoderTransformer()),
+            ('one_hot', OneHotEncoder(columns=one_hot_columns))
+        ])
 
-        # Clean nulls in outlet_size
-        outlets = list(df[df['Outlet_Size'].isnull()]['Outlet_Identifier'].unique())
-        for outlet in outlets:
-            df.loc[df['Outlet_Identifier'] == outlet, 'Outlet_Size'] = 'Small'
+        # Set the mappings for the ordinal encoder
+        ordinal_encoder = pipeline.named_steps['ordinal_encoder']
+        for column, mapping in ordinal_encoder_mapping.items():
+            ordinal_encoder.set_mapping(column, mapping)
 
-        # Divide in buckets of price
-        df['Item_MRP'] = pd.qcut(df['Item_MRP'], 4, labels=[1, 2, 3, 4])
+        # Fit and transform the data using the pipeline
+        transformed_data = pipeline.fit_transform(df)
 
-        # Ordinal variables encoding
-        df['Outlet_Size'] = df['Outlet_Size'].replace({'High': 2, 'Medium': 1, 'Small': 0})
-        df['Outlet_Location_Type'] = df['Outlet_Location_Type'].replace({'Tier 1': 2, 'Tier 2': 1, 'Tier 3': 0})
+        # Save the transformed data to pkl
+        with open(os.path.join(self.output_path, "data_transformed.pkl"), "wb") as pkl_file:
+            pickle.dump(transformed_data, pkl_file)
+        
+        transformed_df = pd.DataFrame(transformed_data)
 
-        # One hot encoding of outlet_type
-        df = pd.get_dummies(df, columns=['Outlet_Type'])
+        # Drop columns
+        columns_to_drop = ['Item_Fat_Content', 'Item_Type', 'Item_Identifier', 'Outlet_Identifier']
+        transformed_df.drop(columns=columns_to_drop, inplace=True)
 
-        # Prepare data fron train and test
-        # Remove variables that are too specific.
-        df = df.drop(columns=['Item_Fat_Content', 'Item_Type', 'Item_Identifier', 'Outlet_Identifier'])
+        # Save the transformed data to csv
+        transformed_df.to_csv(os.path.join(self.output_path, "train_transformed.csv"), index=False)
 
-        df_transformed = df.copy()
-
-        return df_transformed
-
-    def write_prepared_data(self, transformed_dataframe: pd.DataFrame) -> None:
-        """
-        Write tranformed dataframe to the output_path
-        :param transformed_dataframe: the tranformed dataframe to be written
-        :type transformed_dataframe: pd.Dataframe
-        """
-        # Split transformed df into train and test df based on the set column.
-        df_train = transformed_dataframe[transformed_dataframe['Set'] == 'train'].copy()
-        df_test = transformed_dataframe[transformed_dataframe['Set'] == 'test'].copy()
-
-        df_train.drop(['Set'], axis=1, inplace=True)
-        df_test.drop(['Set', 'Item_Outlet_Sales'], axis=1, inplace=True)
-
-        train_output_path = os.path.join(self.output_path, 'train_final.csv')
-        test_output_path = os.path.join(self.output_path, 'test_final.csv')
-
-        # Write train df to csv
-        df_train.to_csv(train_output_path, sep=',', index=False)
-
-        # Write test df to csv
-        df_test.to_csv(test_output_path, sep=',', index=False)
-
-        return None
 
     def run(self):
-
+    
         df = self.read_data()
-        df_transformed = self.data_transformation(df)
-        self.write_prepared_data(df_transformed)
+        df = self.run_pipeline()      
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input-path", type=str, help="Path to the input data CSV file.")
-    parser.add_argument("--output-path", type=str, help="Path to the output data CSV file.")
-
+    parser.add_argument("--output-path", type=str, help="Path to the output data CSV file and pkl.")
     args = parser.parse_args()
-    FeatureEngineeringPipeline(input_path=args.input_path,
-                               output_path=args.output_path).run()
+
+    pipeline = FeatureEngineeringPipeline(input_path = args.input_path,
+                               output_path = args.output_path)
+    pipeline.run()
 
 
 if __name__ == "__main__":
     main()
+    
