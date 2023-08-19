@@ -9,9 +9,8 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import OneHotEncoder
 import pickle
 
- #Convert price into quantiles
 
-
+#Convert price into quantiles
 class PriceBucketsTransformer(BaseEstimator, TransformerMixin):
     def __init__(self, columns=None):
         self.columns = columns
@@ -74,8 +73,6 @@ class OutletSizeImputer(BaseEstimator, TransformerMixin):
     def transform(self, X):
         X_transformed = X.copy()
         for column in self.columns:
-          #  outlets = X[X[column].isnull()]['Outlet_Identifier'].unique()
-         #   for outlet in outlets:
             X_transformed[column].fillna(self.default_outlet_size, inplace=True)
         return X_transformed
 
