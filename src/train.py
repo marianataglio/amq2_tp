@@ -101,7 +101,7 @@ class ModelTrainingPipeline(object):
         full_pipe = Pipeline(tfms)
 
         # Save the complete pipeline to a pickled file
-        with open(os.path.join(self.models_path, "full_pipeline.pkl"), "wb") as f:
+        with open(os.path.join(self.models_path, "model.pkl"), "wb") as f:
             pickle.dump(full_pipe, f)
 
     
