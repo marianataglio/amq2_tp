@@ -49,6 +49,7 @@ class FeatureEngineeringPipeline(object):
         }
         one_hot_columns = ['Outlet_Type']
 
+ 
         pipeline = Pipeline([
             ('price_buckets', PriceBucketsTransformer(columns=price_columns)),
             ('impute_mode', ModeImputation(columns=impute_mode_columns)),
@@ -68,7 +69,7 @@ class FeatureEngineeringPipeline(object):
 
         # Save the transformed data to pkl
         with open(os.path.join(self.output_path, "data_transformed.pkl"), "wb") as pkl_file:
-            pickle.dump(transformed_data, pkl_file)
+            pickle.dump(pipeline, pkl_file)
         
         transformed_df = pd.DataFrame(transformed_data)
 
@@ -79,12 +80,7 @@ class FeatureEngineeringPipeline(object):
         # Save the transformed data to csv
         transformed_df.to_csv(os.path.join(self.output_path, "train_transformed.csv"), index=False)
 
-
-    def run(self):
-    
-        df = self.read_data()
-        df = self.run_pipeline()      
-
+   
 
 def main():
     parser = argparse.ArgumentParser()
@@ -94,7 +90,7 @@ def main():
 
     pipeline = FeatureEngineeringPipeline(input_path = args.input_path,
                                output_path = args.output_path)
-    pipeline.run()
+    pipeline.run_pipeline()
 
 
 if __name__ == "__main__":
