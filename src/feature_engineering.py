@@ -2,9 +2,9 @@
 feature_engineering.py
 
 
-DESCRIPCIÓN: TRANSFORMACIÓN DE VARIABLES
-AUTOR: MARIANA TAGLIO
-FECHA: 20/07/2023
+DESCRIPTION: FEATURE TRANFORMATION
+AUTHOR: MARIANA TAGLIO
+DATE: 20/07/2023
 """
 
 import argparse
@@ -21,14 +21,13 @@ class FeatureEngineeringPipeline(object):
 
     def read_data(self) -> pd.DataFrame:
         """
-        COMPLETAR DOCSTRING  
         Reads train and test data, concatenates both sets to perform feature engineering. 
         :return pandas_df: The desired DataLake table as a DataFrame
         :rtype: pd.DataFrame
         """
 
         data_train = pd.read_csv(os.path.join(self.input_path, 'Train_BigMart.csv'))
-        data_test = pd.read_csv(os.path.join(self.input_path,'Test_BigMart.csv'))
+        data_test = pd.read_csv(os.path.join(self.input_path, 'Test_BigMart.csv'))
         # Identificando la data de train y de test, para posteriormente unión y separación
         data_train['Set'] = 'train'
         data_test['Set'] = 'test'
@@ -36,7 +35,6 @@ class FeatureEngineeringPipeline(object):
 
         return data
 
-    
     def data_transformation(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Feature engineering on dataframe: cleaning and transformation of variables
@@ -44,7 +42,7 @@ class FeatureEngineeringPipeline(object):
         :type df: pd.Dataframe
         :return: The transformed dataframe
         :rtype: pd.Dataframe
-    
+
         """
         # Outlet establishment year
         df['Outlet_Establishment_Year'] = 2020 - df['Outlet_Establishment_Year']
@@ -52,26 +50,26 @@ class FeatureEngineeringPipeline(object):
         # Mode imputation of item_weight
         productos = list(df[df['Item_Weight'].isnull()]['Item_Identifier'].unique())
         for producto in productos:
-            moda = (df[df['Item_Identifier'] == producto][['Item_Weight']]).mode().iloc[0,0]
+            moda = (df[df['Item_Identifier'] == producto][['Item_Weight']]).mode().iloc[0, 0]
             df.loc[df['Item_Identifier'] == producto, 'Item_Weight'] = moda
 
         # Clean nulls in outlet_size
         outlets = list(df[df['Outlet_Size'].isnull()]['Outlet_Identifier'].unique())
         for outlet in outlets:
-            df.loc[df['Outlet_Identifier'] == outlet, 'Outlet_Size'] =  'Small'
+            df.loc[df['Outlet_Identifier'] == outlet, 'Outlet_Size'] = 'Small'
 
         # Divide in buckets of price
-        df['Item_MRP'] = pd.qcut(df['Item_MRP'], 4, labels = [1, 2, 3, 4])
+        df['Item_MRP'] = pd.qcut(df['Item_MRP'], 4, labels=[1, 2, 3, 4])
 
         # Ordinal variables encoding
         df['Outlet_Size'] = df['Outlet_Size'].replace({'High': 2, 'Medium': 1, 'Small': 0})
-        df['Outlet_Location_Type'] = df['Outlet_Location_Type'].replace({'Tier 1': 2, 'Tier 2': 1, 'Tier 3': 0}) # Estas categorias se ordenaron asumiendo la categoria 2 como más lejos
-        
+        df['Outlet_Location_Type'] = df['Outlet_Location_Type'].replace({'Tier 1': 2, 'Tier 2': 1, 'Tier 3': 0})
+
         # One hot encoding of outlet_type
         df = pd.get_dummies(df, columns=['Outlet_Type'])
 
         # Prepare data fron train and test
-        # Remove variables that are too specific. 
+        # Remove variables that are too specific.
         df = df.drop(columns=['Item_Fat_Content', 'Item_Type', 'Item_Identifier', 'Outlet_Identifier'])
 
         df_transformed = df.copy()
@@ -98,17 +96,16 @@ class FeatureEngineeringPipeline(object):
         df_train.to_csv(train_output_path, sep=',', index=False)
 
         # Write test df to csv
-        df_test.to_csv(test_output_path, sep=',', index=False)  
-        
+        df_test.to_csv(test_output_path, sep=',', index=False)
+
         return None
 
     def run(self):
-    
+
         df = self.read_data()
         df_transformed = self.data_transformation(df)
         self.write_prepared_data(df_transformed)
-        
-        
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -116,10 +113,9 @@ def main():
     parser.add_argument("--output-path", type=str, help="Path to the output data CSV file.")
 
     args = parser.parse_args()
-    FeatureEngineeringPipeline(input_path = args.input_path,
-                               output_path = args.output_path).run()
+    FeatureEngineeringPipeline(input_path=args.input_path,
+                               output_path=args.output_path).run()
 
 
 if __name__ == "__main__":
     main()
-    
