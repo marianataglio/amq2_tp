@@ -9,22 +9,25 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import OneHotEncoder
 import pickle
 
-
-#Convert price into quantiles
 class PriceBucketsTransformer(BaseEstimator, TransformerMixin):
-    def __init__(self, columns=None):
+    def __init__(self, columns=None, num_bins=4, labels=[1, 2, 3, 4]):
         self.columns = columns
-    
+        self.num_bins = num_bins
+        self.labels = labels
+        self.bins = {}
+
     def fit(self, X, y=None):
+        for column in self.columns:
+            _, self.bins[column] = pd.qcut(X[column], self.num_bins, duplicates='drop', retbins=True)
         return self
-    
+
     def transform(self, X):
         X_transformed = X.copy()
         for column in self.columns:
-            X_transformed[column] = pd.qcut(X_transformed[column], 4, labels=[1, 2, 3, 4])
+            X_transformed[column] = pd.cut(X_transformed[column], bins=self.bins[column], labels=self.labels, include_lowest=True)
         return X_transformed
-
-
+        
+ 
 # Mode imputation
 
 class ModeImputation(BaseEstimator, TransformerMixin):
