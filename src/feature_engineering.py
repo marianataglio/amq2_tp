@@ -15,8 +15,7 @@ import pickle
 
 
 import pandas as pd
-from transformations import PriceBucketsTransformer, ModeImputation, OutletYearTransformer, OutletSizeImputer, OrdinalEncoderTransformer, OneHotEncoder
-
+from transformations import ModeImputation, OutletYearTransformer, OutletSizeImputer, OrdinalEncoderTransformer, OneHotEncoder, PriceBucketsTransformer
 
 class FeatureEngineeringPipeline(object):
 
@@ -51,7 +50,7 @@ class FeatureEngineeringPipeline(object):
 
  
         pipeline = Pipeline([
-            ('price_buckets', PriceBucketsTransformer(columns=price_columns)),
+            ('price_buckets', PriceBucketsTransformer(columns=price_columns, num_bins=4, labels=[1,2,3,4])),
             ('impute_mode', ModeImputation(columns=impute_mode_columns)),
             ('outlet_year', OutletYearTransformer(columns=outlet_year_columns)),
             ('outlet_size_imputer', OutletSizeImputer(columns=outlet_size_columns)),
@@ -81,7 +80,6 @@ class FeatureEngineeringPipeline(object):
         transformed_df.to_csv(os.path.join(self.output_path, "train_transformed.csv"), index=False)
 
    
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input-path", type=str, help="Path to the input data CSV file.")
