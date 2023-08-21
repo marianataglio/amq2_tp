@@ -96,7 +96,7 @@ class ModelTrainingPipeline(object):
         model = self.model_training(df)
   
         #Access to transformation steps of Pipeline object
-        tfms = features_pipe.named_steps.items()
+        tfms = features_pipe.steps
         tfms = list(tfms)
 
         # Append the trained model to the existing pipeline
@@ -104,7 +104,7 @@ class ModelTrainingPipeline(object):
         full_pipe = Pipeline(tfms)
 
         # Save the complete pipeline to a pickled file
-        with open(os.path.join(self.models_path, "model.pkl"), "wb") as f:
+        with open(self.models_path, "wb") as f:
             pickle.dump(full_pipe, f)
 
     
