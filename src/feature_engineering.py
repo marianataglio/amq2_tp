@@ -42,27 +42,31 @@ class FeatureEngineeringPipeline(object):
         price_columns = ['Item_MRP']
         impute_mode_columns = ['Item_Weight']
         outlet_year_columns = ['Outlet_Establishment_Year']
-        outlet_size_columns = ['Outlet_Size']
+        null_imputer_columns = ['Outlet_Size',]
+        null_value = 'Small'
         ordinal_encoder_mapping = {
             'Outlet_Size': {'High': 2, 'Medium': 1, 'Small': 0},
             'Outlet_Location_Type': {'Tier 1': 2, 'Tier 2': 1, 'Tier 3': 0}
         }
         one_hot_columns = ['Outlet_Type']
+        columns_to_drop = ['Item_Fat_Content', 'Item_Type', 'Item_Identifier', 'Outlet_Identifier']
+
 
  
         pipeline = Pipeline([
             ('price_buckets', PriceBucketsTransformer(columns=price_columns, num_bins=4, labels=[1,2,3,4])),
             ('impute_mode', ModeImputation(columns=impute_mode_columns)),
             ('outlet_year', OutletYearTransformer(columns=outlet_year_columns)),
-            ('outlet_size_imputer', OutletSizeImputer(columns=outlet_size_columns)),
-            ('ordinal_encoder', OrdinalEncoderTransformer()),
-            ('one_hot', OneHotEncoder(columns=one_hot_columns))
+            ('outlet_size_imputer', NullImputer(value= null_value, columns=null_imputer_columns)),
+            ('ordinal_encoder', OrdinalEncoderTransformer(column_mappings=ordinal_encoder_mapping)),
+            ('one_hot', OneHotEncoder(columns=one_hot_columns)),
+            ('remove_columns', RemoveColumns(columns=columns_to_drop))
         ])
 
         # Set the mappings for the ordinal encoder
-        ordinal_encoder = pipeline.named_steps['ordinal_encoder']
-        for column, mapping in ordinal_encoder_mapping.items():
-            ordinal_encoder.set_mapping(column, mapping)
+        #ordinal_encoder = pipeline.named_steps['ordinal_encoder']
+        #for column, mapping in ordinal_encoder_mapping.items():
+        #    ordinal_encoder.set_mapping(column, mapping)
 
         # Fit and transform the data using the pipeline
         transformed_data = pipeline.fit_transform(df)
@@ -74,8 +78,8 @@ class FeatureEngineeringPipeline(object):
         transformed_df = pd.DataFrame(transformed_data)
 
         # Drop columns
-        columns_to_drop = ['Item_Fat_Content', 'Item_Type', 'Item_Identifier', 'Outlet_Identifier']
-        transformed_df.drop(columns=columns_to_drop, inplace=True)
+        #columns_to_drop = ['Item_Fat_Content', 'Item_Type', 'Item_Identifier', 'Outlet_Identifier']
+        #transformed_df.drop(columns=columns_to_drop, inplace=True)
 
         # Save the transformed data to csv
         transformed_df.to_csv(os.path.join(self.output_path, "train_transformed.csv"), index=False)
