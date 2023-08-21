@@ -15,7 +15,8 @@ import pickle
 
 
 import pandas as pd
-from transformations import ModeImputation, OutletYearTransformer, OutletSizeImputer, OrdinalEncoderTransformer, OneHotEncoder, PriceBucketsTransformer
+from transformations import ModeImputation, OutletYearTransformer, NullImputer, OrdinalEncoderTransformer, \
+    OneHotEncoder, PriceBucketsTransformer, RemoveColumns
 
 class FeatureEngineeringPipeline(object):
 
@@ -31,7 +32,7 @@ class FeatureEngineeringPipeline(object):
         :rtype: pd.DataFrame
         """
 
-        data = pd.read_csv(os.path.join(self.input_path, 'Train_BigMart.csv'))
+        data = pd.read_csv(self.input_path)
 
         return data
 
