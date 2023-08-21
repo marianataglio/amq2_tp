@@ -1,12 +1,20 @@
 import subprocess
-import os 
+import argparse
 
-from config import ROOT_PATH, load_config
 
-config = load_config(os.path.join(ROOT_PATH, "config.yaml"))
+parser = argparse.ArgumentParser(description="Train pipeline script")
+parser.add_argument("--input-path", required=True, help="Name of the input file in transformed path")
+parser.add_argument("--models-path", required=True, help="Path to model .pkl")
+parser.add_argument("--output-path", required=True, help="Path to predictions path")
 
-#subprocess.run('Python feature_engineering.py --input-path {DATA_PATH} --output-path {TFMD_DATA_PATH}'.format(**config).split())
+args = parser.parse_args()
+
+config = dict(input_path = args.input_path,
+                models_path = args.models_path,
+                output_path = args.output_path
+               )
+
 subprocess.run(
-    'Python predict.py --input-path {TFMD_DATA_PATH} --models-path {PRODUCTION_PATH}' 
-                     ' --output-path {PREDS_PATH}'.format(**config).split()
+    'Python predict.py --input-path {input_path} --models-path {models_path}' 
+                     ' --output-path {output_path}'.format(**config).split()
 )
