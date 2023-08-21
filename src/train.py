@@ -36,8 +36,22 @@ class ModelTrainingPipeline(object):
         :rtype: pd.DataFrame
         """
         df_train = pd.read_csv(os.path.join(self.input_path, 'train_transformed.csv'))
-
         return df_train
+
+    def _evaluate_metrics(self, model, X, y, dataset_name):
+# Calculate mean square error and rr (coefficient of determination)
+            mse_train = metrics.mean_squared_error(y, model.predict(X))
+            r2_train = model.score(X, y)
+            print('Métricas del Modelo:')
+            print('{}: RMSE: {:.2f} - R2: {:.4f}'.format(dataset_name, mse_train**0.5, r2_train))
+
+    def _print_model_coefficients(self, model, column_names):
+            print('\nCoeficientes del Modelo:')
+            print('Intersección: {:.2f}'.format(model.intercept_))
+
+            # Model coefficients
+            coef = dict(zip(column_names, model.coef_))
+            print(coef, '\n')
 
     def model_training(self, df: pd.DataFrame) -> pd.DataFrame:
             """
