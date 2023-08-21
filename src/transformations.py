@@ -76,21 +76,25 @@ class NullImputer(BaseEstimator, TransformerMixin):
 
         
 class OrdinalEncoderTransformer(BaseEstimator, TransformerMixin):
-    def __init__(self):
-        self.column_mappings = {}
-    
-    def set_mapping(self, column, mapping):
-        self.column_mappings[column] = mapping
+    def __init__(self, column_mappings):
+        self.column_mappings = deepcopy(column_mappings)
     
     def fit(self, X, y=None):
         return self
     
     def transform(self, X):
-        X_transformed = X.copy()
+        X = X.copy()
         for column, mapping in self.column_mappings.items():
-            if column in X_transformed.columns:
-                X_transformed[column] = X_transformed[column].replace(mapping)
-        return X_transformed
+            if column in X.columns:
+                unique_values = set(X[column].unique())
+                mapping_keys = set(mapping.keys())
+                if unique_values.issuperset(mapping_keys) and unique_values != mapping_keys:
+                    diff = unique_values - mapping_keys               
+                    raise RuntimeError(f"{diff} values not found in mapping for column {column}")       
+                X[column] = X[column].replace(mapping)
+            else:
+                warnings.warn(f"Column {column} not found in dataset. Continuing")
+        return X
 
 # Se puede mejorar usando el onehot encdoing de sklearn, pero quiero asegurarme de tener los mismos resultados que el DS
 
