@@ -109,3 +109,22 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         X_one_hot =pd.get_dummies(X, columns = self.columns, dtype=int)
         return X_one_hot
 
+class RemoveColumns(BaseEstimator, TransformerMixin):
+    def __init__(self, columns=None):
+        self.columns = columns
+
+    def fit(self, X, y=None):
+        return self
+    
+    def transform(self, X, y=None):
+        columns_set = set(self.columns)
+        found_columns = set(X.columns)
+        intersection = columns_set.intersection(found_columns)
+        diff = columns_set - found_columns
+
+        #Warning: columns not found in dataset
+        if len(diff) > 0:
+            warnings.warn("Some columns were not found ({diff}) while dropping. Continuing")
+        X.drop(columns=intersection, inplace=True)
+
+        return X
