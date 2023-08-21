@@ -55,25 +55,24 @@ class OutletYearTransformer(BaseEstimator, TransformerMixin):
     def transform(self, X):
         X = X.copy()
         for column in self.columns:
-            X_transformed[column] = 2020 - X_transformed[column]
-        return X_transformed
-
+            X[column] = self.current_year - X[column]
+        return X
 
 #Outlet size imputer: converts outlet size null to small based on the associated outlet_identifier
 
-class OutletSizeImputer(BaseEstimator, TransformerMixin):
-    def __init__(self, columns=None):
+class NullImputer(BaseEstimator, TransformerMixin):
+    def __init__(self, value= 'Small', columns=None):
         self.columns = columns
+        self.value = value
     
     def fit(self, X, y=None):
-        self.default_outlet_size = 'Small'
         return self
     
     def transform(self, X):
-        X_transformed = X.copy()
+        X = X.copy()
         for column in self.columns:
-            X_transformed[column].fillna(self.default_outlet_size, inplace=True)
-        return X_transformed
+            X[column].fillna(self.value, inplace=True)
+        return X
 
         
 class OrdinalEncoderTransformer(BaseEstimator, TransformerMixin):
