@@ -45,14 +45,15 @@ class ModeImputation(BaseEstimator, TransformerMixin):
 #necesito asegurarme de poder reproducir lo que hizo el DS
 
 class OutletYearTransformer(BaseEstimator, TransformerMixin):
-    def __init__(self, columns=None):
+    def __init__(self, current_year=2020, columns=None):
         self.columns = columns
+        self.current_year = current_year
     
     def fit(self, X, y=None):
         return self
     
     def transform(self, X):
-        X_transformed = X.copy()
+        X = X.copy()
         for column in self.columns:
             X_transformed[column] = 2020 - X_transformed[column]
         return X_transformed
