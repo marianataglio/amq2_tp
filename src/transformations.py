@@ -18,10 +18,10 @@ class PriceBucketsTransformer(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        X_transformed = X.copy()
+        X = X.copy()
         for column in self.columns:
-            X_transformed[column] = pd.cut(X_transformed[column], bins=self.bins[column], labels=self.labels, include_lowest=True)
-        return X_transformed
+            X[column] = pd.cut(X[column], bins=self.bins[column], labels=self.labels, include_lowest=True)
+        return X
         
  
 # Mode imputation
@@ -34,10 +34,10 @@ class ModeImputation(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        X_copy = X.copy()
-        missing_rows = X_copy[self.columns].isnull().any(axis=1)
-        X_copy.loc[missing_rows, self.columns] =  self.most_frequent_values.values
-        return X_copy
+        X = X.copy()
+        missing_rows = X[self.columns].isnull().any(axis=1)
+        X.loc[missing_rows, self.columns] =  self.most_frequent_values.values
+        return X
 
 
 #Outlet year transformation (it will receive the outlet establishment year and it will convert it to 2020-year)
