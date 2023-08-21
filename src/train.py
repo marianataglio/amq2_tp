@@ -67,7 +67,10 @@ class ModelTrainingPipeline(object):
 
             # Split into training and validation sets
             X = df.drop(columns='Item_Outlet_Sales') 
-            x_train, x_val, y_train, y_val = train_test_split(X, df['Item_Outlet_Sales'], test_size = 0.3, random_state=seed)
+            x_train, x_val, y_train, y_val = train_test_split(
+                X, df['Item_Outlet_Sales'], 
+                test_size=0.3, random_state=seed
+            )
 
             # Train model
             model.fit(x_train,y_train)
@@ -75,24 +78,10 @@ class ModelTrainingPipeline(object):
             # Prediction over validation set
             pred = model.predict(x_val)
 
-            # Calculate mean square error and rr (coefficient of determination)
-            mse_train = metrics.mean_squared_error(y_train, model.predict(x_train))
-            r2_train = model.score(x_train, y_train)
-            print('Métricas del Modelo:')
-            print('ENTRENAMIENTO: RMSE: {:.2f} - R2: {:.4f}'.format(mse_train**0.5, r2_train))
+            self._evaluate_metrics(model, x_train, y_train, "Train")
+            self._evaluate_metrics(model, x_val, y_val, "Test")
 
-            mse_val = metrics.mean_squared_error(y_val, pred)
-            r2_val = model.score(x_val, y_val)
-            print('VALIDACIÓN: RMSE: {:.2f} - R2: {:.4f}'.format(mse_val**0.5, r2_val))
-
-            print('\nCoeficientes del Modelo:')
-            # Print model constant
-            print('Intersección: {:.2f}'.format(model.intercept_))
-
-            # Model coefficients
-            coef = pd.DataFrame(x_train.columns, columns=['features'])
-            coef['Coeficiente Estimados'] = model.coef_
-            print(coef, '\n')
+            self._print_model_coefficients(model, x_train.columns)
             
             return model
 
