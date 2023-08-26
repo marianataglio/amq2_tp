@@ -20,12 +20,16 @@ from sklearn.pipeline import Pipeline
 class ModelTrainingPipeline(object):
     """
     Class that handles the whole training pipeline
-
     """
     def __init__(self, input_path, models_path):
         """
-        :input_path str 
-        """
+        Initialize the ModelTrainingPipeline object.
+        
+        :param input_path: Path to the input data CSV file and pkl.
+        :type input_path: str
+        :param models_path: Path to save the trained model in pkl format.
+        :type models_path: str
+        """ 
         self.input_path = input_path
         self.models_path = models_path
 
@@ -39,19 +43,39 @@ class ModelTrainingPipeline(object):
         return df_train
 
     def _evaluate_metrics(self, model, X, y, dataset_name):
-# Calculate mean square error and rr (coefficient of determination)
-            mse_train = metrics.mean_squared_error(y, model.predict(X))
-            r2_train = model.score(X, y)
-            print('Métricas del Modelo:')
-            print('{}: RMSE: {:.2f} - R2: {:.4f}'.format(dataset_name, mse_train**0.5, r2_train))
+        """
+        Evaluate and print metrics for the trained model.
+        
+        :param model: The trained machine learning model.
+        :type model: sklearn.base.BaseEstimator
+        :param X: Features for prediction.
+        :type X: pd.DataFrame
+        :param y: Target variable.
+        :type y: pd.Series
+        :param dataset_name: Name of the dataset (e.g., "Train" or "Test").
+        :type dataset_name: str
+"""
+        mse_train = metrics.mean_squared_error(y, model.predict(X))
+        r2_train = model.score(X, y)
+        print('Métricas del Modelo:')
+        print('{}: RMSE: {:.2f} - R2: {:.4f}'.format(dataset_name, mse_train**0.5, r2_train))
 
     def _print_model_coefficients(self, model, column_names):
-            print('\nCoeficientes del Modelo:')
-            print('Intersección: {:.2f}'.format(model.intercept_))
+        """
+        Print the coefficients of the trained model.
+        
+        :param model: The trained machine learning model.
+        :type model: sklearn.base.BaseEstimator
+        :param column_names: List of feature column names.
+        :type column_names: list
+        """
 
-            # Model coefficients
-            coef = dict(zip(column_names, model.coef_))
-            print(coef, '\n')
+        print('\nCoeficientes del Modelo:')
+        print('Intersección: {:.2f}'.format(model.intercept_))
+
+        # Model coefficients
+        coef = dict(zip(column_names, model.coef_))
+        print(coef, '\n')
 
     def model_training(self, df: pd.DataFrame) -> pd.DataFrame:
             """
@@ -65,17 +89,16 @@ class ModelTrainingPipeline(object):
             seed = 28
             model = LinearRegression()
 
-            # Split into training and validation sets
             X = df.drop(columns='Item_Outlet_Sales') 
             x_train, x_val, y_train, y_val = train_test_split(
                 X, df['Item_Outlet_Sales'], 
                 test_size=0.3, random_state=seed
             )
+            print("data splited")
 
-            # Train model
             model.fit(x_train,y_train)
+            print("model fit")
 
-            # Prediction over validation set
             pred = model.predict(x_val)
 
             self._evaluate_metrics(model, x_train, y_train, "Train")
@@ -86,16 +109,16 @@ class ModelTrainingPipeline(object):
             return model
 
     def run_pipeline(self):
-
-        # Load the pre-trained pipeline from a pickled file
-        with open(os.path.join(self.input_path, 'data_transformed.pkl'), 'rb') as f:
+        """
+        Run the model training pipeline
+        """
+        with open(os.path.join(self.input_path, 'pipeline.pkl'), 'rb') as f:
             features_pipe = pickle.load(f)
 
-        #Train model
         df = self.read_data()
         model = self.model_training(df)
   
-        #Access to transformation steps of Pipeline object
+        # Access to transformation steps of Pipeline object
         tfms = features_pipe.steps
         tfms = list(tfms)
 
