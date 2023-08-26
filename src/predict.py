@@ -1,11 +1,9 @@
 """
 predict.py
 
-COMPLETAR DOCSTRING
-
-DESCRIPCIÓN:
-AUTOR:
-FECHA:
+DESCRIPCIÓN: PREDICCIÓN DEL MODELO SOBRE DATOS TRANSFORMADOS. 
+AUTOR: MARIANA TAGLIO
+FECHA: 26/08/2023
 """
 
 # Imports
@@ -20,10 +18,19 @@ class MakePredictionPipeline(object):
         loads model from `model_path`, and writes predictions on `output_path`.
         """
         def __init__(self, input_path, output_path, models_path):
+            """
+        Initialize the MakePredictionPipeline object.
+        
+        :param input_path: Path to the transformed data CSV file.
+        :type input_path: str
+        :param output_path: Path to save the predicted data CSV file.
+        :type output_path: str
+        :param models_path: Path to load the trained model in pkl format.
+        :type models_path: str
+        """
             self.input_path = input_path
             self.output_path = output_path
-            self.models_path = models_path
-                    
+            self.models_path = models_path         
 
         def load_data(self) -> pd.DataFrame:
             """
@@ -35,32 +42,36 @@ class MakePredictionPipeline(object):
 
         def load_model(self) -> None:
             """
-            Loads best model. Imports pickle file.
+            Loads the trained model from a pickled file
             """    
-             # Print the model path for debugging
-            print("Model path:", self.models_path)
-            #ToDo: change to PRODUCTION_PATH eventually
-
             with open(self.models_path, 'rb') as f:
                 self.model = pickle.load(f)           
             print("Pipeline loaded:", self.model) 
 
         def make_predictions(self, data: pd.DataFrame) -> pd.DataFrame:
             """
-            COMPLETAR DOCSTRING
+            Makes predictions using the loaded model.
+        
+            :param data: DataFrame containing the test data.
+            :type data: pd.DataFrame 
             """
-            #predict 
             model_pipeline = self.model
             predicted_data = model_pipeline.predict(data)
             data["Prediction"] = predicted_data
 
         def write_predictions(self, data: pd.DataFrame) -> None:
             """
-            COMPLETAR DOCSTRING
+            Writes the predicted data to a CSV file.
+        
+            :param data: DataFrame containing the predicted data.
+            :type data: pd.DataFrame 
             """ 
             data.to_csv(self.output_path, index=False)
 
         def run(self):
+            """
+            Runs the prediction pipeline
+            """
 
             data = self.load_data()
             self.load_model()
