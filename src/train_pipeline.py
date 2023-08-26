@@ -6,6 +6,7 @@ parser.add_argument("--input-file", required=True, help="Name of the input file 
 parser.add_argument("--tfmd-dir", required=True, help="Path to transformed csv and pkl")
 parser.add_argument("--model-file", required=True, help="Path to model .pkl")
 parser.add_argument("--log-file", required=True, help= "Path to log file")
+
 args = parser.parse_args()
 
 config = dict(input_file = args.input_file,
