@@ -6,6 +6,9 @@ import warnings
 
 
 class PriceBucketsTransformer(BaseEstimator, TransformerMixin):
+    """
+    A transformer that applies price bucketing to specified columns
+    """
     def __init__(self, columns=None, num_bins=4, labels=[1, 2, 3, 4]):
         self.columns = columns
         self.num_bins = num_bins
@@ -22,29 +25,60 @@ class PriceBucketsTransformer(BaseEstimator, TransformerMixin):
         for column in self.columns:
             X[column] = pd.cut(X[column], bins=self.bins[column], labels=self.labels, include_lowest=True)
         return X
-        
- 
-# Mode imputation
-class ModeImputation(BaseEstimator, TransformerMixin):
-    def __init__(self, columns):
-        self.columns = columns
+    
+
+class ModeImputationByGroup(BaseEstimator, TransformerMixin):
+    """
+    A transformer that performs mode imputation within groups
+    """
+    def __init__(self, impute_column, group_column):
+        self.impute_column = impute_column
+        self.group_column = group_column
+        self.group_modes_ = None
+        self.mean = None
 
     def fit(self, X, y=None):
-        self.most_frequent_values = X[self.columns].mode().iloc[0]
+        # Dict to store modes for each group 
+        self.group_modes_ = {}
+
+        # Calculate the mean of the impute_column
+        self.mean = X[self.impute_column].mean()
+
+        # Find unique values in the group_column where the impute column in null
+        productos = list(X[X[self.impute_column].isnull()][self.group_column].unique())
+
+        # Iterate through each unique value in the group_column
+        for producto in productos:
+            column = (X[X[self.group_column] == producto][[self.impute_column]]).dropna()
+
+            # Check if there are non-null values in the column
+            if len(column) > 0:
+                # Calculate the mode and store it for the current group
+                self.group_modes_[producto] = column.mode().iloc[0,0]
         return self
 
     def transform(self, X):
-        X = X.copy()
-        missing_rows = X[self.columns].isnull().any(axis=1)
-        X.loc[missing_rows, self.columns] =  self.most_frequent_values.values
+        # Find unique values in the group_column where impute_column is null
+        productos = list(X[X[self.impute_column].isnull()][self.group_column].unique())
+
+        # Iterate through each unique value in the group_column
+        for producto in productos:
+            # Check if the mode for the current group is available
+            if producto in self.group_modes_:
+                # Impute missing values with the mode of the current group
+                value = self.group_modes_[producto]
+            else:
+                #Impute with mean if product id hasn't been seen during train
+                value = self.mean
+            # Update the missing values in the impute_column with the calculated value
+            X.loc[X[self.group_column] == producto, self.impute_column] = value
         return X
+     
 
-
-#Outlet year transformation (it will receive the outlet establishment year and it will convert it to 2020-year)
-#si quisiera mejorarlo tendría que usar datetime.now().year pero no lo voy a hacer ahora porque
-#necesito asegurarme de poder reproducir lo que hizo el DS
-
-class OutletYearTransformer(BaseEstimator, TransformerMixin):
+class YearTransformer(BaseEstimator, TransformerMixin):
+    """
+    A transformer that converts a specific year to number of years from the current year
+    """
     def __init__(self, current_year=2020, columns=None):
         self.columns = columns
         self.current_year = current_year
@@ -58,9 +92,10 @@ class OutletYearTransformer(BaseEstimator, TransformerMixin):
             X[column] = self.current_year - X[column]
         return X
 
-#Outlet size imputer: converts outlet size null to small based on the associated outlet_identifier
-
 class NullImputer(BaseEstimator, TransformerMixin):
+    """
+    A transformer that imputes null values with a specified values.
+    """
     def __init__(self, value= 'Small', columns=None):
         self.columns = columns
         self.value = value
@@ -76,6 +111,10 @@ class NullImputer(BaseEstimator, TransformerMixin):
 
         
 class OrdinalEncoderTransformer(BaseEstimator, TransformerMixin):
+    """
+    A transformer that performs ordinal encoding using specified mappings.
+    """
+
     def __init__(self, column_mappings):
         self.column_mappings = deepcopy(column_mappings)
     
@@ -85,20 +124,32 @@ class OrdinalEncoderTransformer(BaseEstimator, TransformerMixin):
     def transform(self, X):
         X = X.copy()
         for column, mapping in self.column_mappings.items():
+            # Check if the current column is present in the input dataframe
             if column in X.columns:
+                # Get the unique values present in the column
                 unique_values = set(X[column].unique())
+
+                # Get the keys (values to be encoded) from the mapping
                 mapping_keys = set(mapping.keys())
+
+                # Check if all mapping keys are present in the column's unique values,
+                # and if there are some unique values that are not present in the mapping
                 if unique_values.issuperset(mapping_keys) and unique_values != mapping_keys:
-                    diff = unique_values - mapping_keys               
+
+                    # Calculate the set difference to find values not found in the mapping
+                    diff = unique_values - mapping_keys          
+                    # Raise an error indicating which values are missing in the mapping for this column
                     raise RuntimeError(f"{diff} values not found in mapping for column {column}")       
                 X[column] = X[column].replace(mapping)
             else:
+                # If the current column is not found in the dataset, issue a warning
                 warnings.warn(f"Column {column} not found in dataset. Continuing")
         return X
 
-# Se puede mejorar usando el onehot encdoing de sklearn, pero quiero asegurarme de tener los mismos resultados que el DS
-
 class OneHotEncoder(BaseEstimator, TransformerMixin):
+    """
+    A transformer that performs one hot encoding encoding on specified columns.
+    """
     def __init__(self, columns=None):
         self.columns = columns
     
@@ -110,6 +161,9 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         return X_one_hot
 
 class RemoveColumns(BaseEstimator, TransformerMixin):
+    """
+    A transformer that removes specified columns.
+    """
     def __init__(self, columns=None):
         self.columns = columns
 
@@ -122,7 +176,7 @@ class RemoveColumns(BaseEstimator, TransformerMixin):
         intersection = columns_set.intersection(found_columns)
         diff = columns_set - found_columns
 
-        #Warning: columns not found in dataset
+        # If the current column is not found in the dataset, issue a warning
         if len(diff) > 0:
             warnings.warn("Some columns were not found ({diff}) while dropping. Continuing")
         X.drop(columns=intersection, inplace=True)
