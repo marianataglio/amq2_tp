@@ -13,7 +13,6 @@ import os
 from sklearn.pipeline import Pipeline
 import pickle
 
-
 import pandas as pd
 from transformations import YearTransformer, NullImputer, OrdinalEncoderTransformer, \
     OneHotEncoder, PriceBucketsTransformer, RemoveColumns, ModeImputationByGroup
@@ -79,15 +78,19 @@ class FeatureEngineeringPipeline(object):
         print("data transformed")
 
         # Save the transformed data to pkl
-        with open(os.path.join(self.output_path, "pipeline.pkl"), "wb") as pkl_file:
+        pkl_path = os.path.join(self.output_path, "pipeline.pkl")
+        print(f"Saving pipeline to {pkl_path}")
+
+        with open(pkl_path, "wb") as pkl_file:
             pickle.dump(pipeline, pkl_file)
         
         transformed_df = pd.DataFrame(transformed_data)
 
         # Save the transformed data to csv
-        transformed_df.to_csv(os.path.join(self.output_path, "train_transformed.csv"), index=False)
+        csv_path = os.path.join(self.output_path, "train_transformed.csv")
+        print(f"Saving transformed data to: {csv_path}")
+        transformed_df.to_csv(csv_path, index=False)
 
-   
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input-path", type=str, help="Path to the input data CSV file.")
