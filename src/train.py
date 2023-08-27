@@ -96,7 +96,7 @@ class ModelTrainingPipeline(object):
             )
             print("data splited")
 
-            model.fit(x_train,y_train)
+            model.fit(x_train, y_train)
             print("model fit")
 
             pred = model.predict(x_val)
@@ -137,8 +137,7 @@ def main():
     parser.add_argument("--models-path", type=str, help="Path to save the trained model in pkl format.")
 
     args = parser.parse_args()
-    pipeline = ModelTrainingPipeline(input_path = args.input_path,
-                            models_path = args.models_path)
+    pipeline = ModelTrainingPipeline(input_path=args.input_path, models_path=args.models_path)
     pipeline.run_pipeline()
 
 

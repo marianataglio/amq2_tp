@@ -14,20 +14,21 @@ import argparse
 
 class MakePredictionPipeline(object):
         """
-        Class implementing models prediction. Receives as `input_path` transformed data output of feature_engineering.py,
+        Class implementing models prediction.
+        Receives as `input_path` transformed data output of feature_engineering.py,
         loads model from `model_path`, and writes predictions on `output_path`.
         """
         def __init__(self, input_path, output_path, models_path):
             """
-        Initialize the MakePredictionPipeline object.
-        
-        :param input_path: Path to the transformed data CSV file.
-        :type input_path: str
-        :param output_path: Path to save the predicted data CSV file.
-        :type output_path: str
-        :param models_path: Path to load the trained model in pkl format.
-        :type models_path: str
-        """
+            Initialize the MakePredictionPipeline object.
+
+            :param input_path: Path to the transformed data CSV file.
+            :type input_path: str
+            :param output_path: Path to save the predicted data CSV file.
+            :type output_path: str
+            :param models_path: Path to load the trained model in pkl format.
+            :type models_path: str
+            """
             self.input_path = input_path
             self.output_path = output_path
             self.models_path = models_path         
@@ -85,7 +86,7 @@ def main():
     parser.add_argument("--output-path", type=str, help="Path to save predictions")
 
     args = parser.parse_args()
-    MakePredictionPipeline(input_path = args.input_path, models_path = args.models_path, output_path = args.output_path).run()
+    MakePredictionPipeline(input_path=args.input_path, models_path=args.models_path, output_path=args.output_path).run()
 
 
 if __name__ == "__main__":
