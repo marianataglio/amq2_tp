@@ -1,8 +1,9 @@
 # Sales prediction project
+Author: Mariana Taglio
 This repository contains scripts and classes for a machine learning project that focuses on transforming raw data, building a linear regression model, and making predictions. The project is organized into several scripts and classes to facilitate modularity and reusability.
 
 ## Project Structure
-
+All the source code is located in the src folder.
 The project is structured as follows:
 
 - `transformers.py`: This script defines a seveeral classes that inherit from sklearn BaseEstimator and TransformerMixin that encapsulate a set of data transformation methods. These methods can be applied to preprocess raw data before feeding it into the model. The transformations included are:
@@ -36,10 +37,8 @@ The project is structured as follows:
 
 ## Usage
 
-1. Begin by placing your raw data in a suitable directory.
+1. Begin by placing your raw data in `data directory`
 2. To use the train pipeline for preprocessing data and training a model, follow these steps:
-
-    a) Prepare the raw data file, a directory to store transformed data, and a model file path.
 
     b) Run the `train_pipeline.py` script with the necessary command-line arguments:
 
@@ -80,3 +79,5 @@ The repository also includes a notebook named hyperparameter_optimization.ipynb 
 ## Conclusion
 
 This machine learning project provides a structured framework for data transformation, feature engineering, model training, and prediction. It promotes modularity, reusability, and easy experimentation with different transformations and models. By following the provided guidelines, users can preprocess data, train models, and make predictions efficiently.
+
+
