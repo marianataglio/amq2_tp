@@ -76,8 +76,5 @@ The project is structured as follows:
 
 The repository also includes a notebook named hyperparameter_optimization.ipynb that focuses on training several XGBoost models and performing hyperparameter optimization using grid search. The notebook then proceeds to plot various graphics for visualizing the results of the optimization process.
 
-## Conclusion
-
-This machine learning project provides a structured framework for data transformation, feature engineering, model training, and prediction. It promotes modularity, reusability, and easy experimentation with different transformations and models. By following the provided guidelines, users can preprocess data, train models, and make predictions efficiently.
 
 
