@@ -68,7 +68,7 @@ class ModeImputationByGroup(BaseEstimator, TransformerMixin):
                 # Impute missing values with the mode of the current group
                 value = self.group_modes_[producto]
             else:
-                #Impute with mean if product id hasn't been seen during train
+                # Impute with mean if product id hasn't been seen during train
                 value = self.mean
             # Update the missing values in the impute_column with the calculated value
             X.loc[X[self.group_column] == producto, self.impute_column] = value
@@ -96,7 +96,7 @@ class NullImputer(BaseEstimator, TransformerMixin):
     """
     A transformer that imputes null values with a specified values.
     """
-    def __init__(self, value= 'Small', columns=None):
+    def __init__(self, value='Small', columns=None):
         self.columns = columns
         self.value = value
     
@@ -157,7 +157,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         return self
     
     def transform(self, X, y=None):
-        X_one_hot =pd.get_dummies(X, columns = self.columns, dtype=int)
+        X_one_hot = pd.get_dummies(X, columns=self.columns, dtype=int)
         return X_one_hot
 
 class RemoveColumns(BaseEstimator, TransformerMixin):

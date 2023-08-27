@@ -10,19 +10,18 @@ parser.add_argument("--log-file", required=True, help="Path to log file")
 
 args = parser.parse_args()
 
-config = dict(input_path = args.input_path,
-                models_path = args.models_path,
-                output_path = args.output_path,
-                log_file = args.log_file
-               )
+config = dict(input_path=args.input_path,
+                models_path=args.models_path,
+                output_path=args.output_path,
+                log_file=args.log_file)
 
-predict_command = 'python predict.py --input-path {input_path} --models-path {models_path} --output-path {output_path}'.format(**config)
-
-#.split() 
-
+predict_command = (
+    'python predict.py --input-path {input_path} --models-path {models_path} --output-path {output_path}'
+    .format(**config)
+)
 
 with open(args.log_file, 'a') as log:
-    pred_process = subprocess.Popen(predict_command,shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    pred_process = subprocess.Popen(predict_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     for process in [pred_process]:
         while True:
@@ -31,5 +30,3 @@ with open(args.log_file, 'a') as log:
                 break
             log.write(line.decode('utf-8'))
             log.flush()
-
-
